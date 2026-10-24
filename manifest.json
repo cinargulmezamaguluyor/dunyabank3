@@ -1,0 +1,12 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "DünyaBank - ŞehirPay",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "DünyaBank",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "description": "Şehir Dijital Finans Sistemi"
+}

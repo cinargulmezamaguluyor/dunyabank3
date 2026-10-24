@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DünyaBank - ŞehirPay</title>
+    <!-- PWA MANIFEST VE SERVIS WORKER BAGLANTISI -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0f1d">
+    <!-- QR KOD KÜTÜPHANESİ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init("38SjT7GlTWSAXfiWT");
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-main: #0a0f1d;
+            --card-bg: #161f33;
+            --accent-blue: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .app-container {
+            background: var(--card-bg);
+            border: 1px solid #1e293b;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 440px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .app-logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .app-header p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.2s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #ffffff; }
+        .btn-success { background: linear-gradient(135deg, #22c55e, #15803d); color: #ffffff; }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #b45309); color: #ffffff; }
+        .btn-secondary { background: #334155; color: #ffffff; }
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            margin-top: 14px;
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .switch-link span { color: var(--accent-blue); font-weight: 600; }
+
+        .bank-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .card-chip {
+            width: 36px;
+            height: 26px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .balance-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .balance-value {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--accent-green);
+            margin: 4px 0 12px 0;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            border-top: 1px solid #1e293b;
+            padding-top: 12px;
+        }
+
+        .role-badge {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-blue);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .admin-header-card {
+            background: linear-gradient(135deg, #0284c7, #0f172a);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+
+        .admin-user-card, .log-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .admin-user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        /* MODAL STİLLERİ */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 15, 29, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            color: var(--accent-blue);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        /* LOGOLU DİJİTAL DEKONT STİLLERİ */
+        .receipt-card {
+            background: #ffffff;
+            color: #0f172a;
+            border-radius: 16px;
+            padding: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px dashed #cbd5e1;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .receipt-logo {
+            max-width: 140px;
+            height: auto;
+            margin-bottom: 6px;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .history-item {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: #1e293b;
+        }
+
+        #qr-code-box {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px auto;
+            width: fit-content;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- LOGOLU APP BAŞLIĞI -->
+        <div class="app-header">
+            <img src="logo.png" alt="DünyaBank" class="app-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
+            <h1 id="alt-title" style="display:none; color: var(--accent-blue);">DünyaBank</h1>
+            <p>Şehir Dijital Finans Sistemi</p>
+        </div>
+
+        <!-- KAYIT EKRANI -->
+        <div id="register-box">
+            <div class="form-group">
+                <input type="text" id="reg-user" placeholder="Kullanıcı Adı">
+            </div>
+            <div class="form-group">
+                <input type="password" id="reg-pass" placeholder="Şifre">
+            </div>
+            <button class="btn btn-primary" onclick="register()">Hesap Oluştur</button>
+            <div class="switch-link" onclick="showLogin()">Zaten hesabın var mı? <span>Giriş Yap</span></div>
+        </div>
+
+        <!-- GİRİŞ EKRANI -->
+        <div id="login-box" class="hidden">
+            <div class="form-group">
+                <input type="text" id="log-user" placeholder="Kullanıcı Adı">
+            </div>
+            <div class="form-group">
+                <input type="password" id="log-pass" placeholder="Şifre">
+            </div>
+            <button class="btn btn-primary" onclick="checkLoginCredentials()">Giriş Yap</button>
+            <div class="switch-link" onclick="showRegister()">Hesabın yok mu? <span>Kayıt Ol</span></div>
+        </div>
+
+        <!-- 2FA DOĞRULAMA EKRANI -->
+        <div id="2fa-box" class="hidden">
+            <h3 style="text-align: center; color: var(--accent-blue); margin-bottom: 10px;">🔒 2 Aşamalı Doğrulama</h3>
+            <p style="text-align: center; font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
+                <b>cinargulmez34@gmail.com</b> adresine gönderilen 6 haneli doğrulama kodunu girin.
+            </p>
+            <div class="form-group">
+                <input type="text" id="verification-code" maxlength="6" placeholder="6 Haneli Kod" style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
+            </div>
+            <button class="btn btn-success" onclick="verify2FACode()">Kodu Onayla ve Gir</button>
+            <button class="btn btn-secondary" onclick="resend2FACode()" style="margin-top: 8px;">Kodu Tekrar Gönder</button>
+            <button class="btn btn-danger" onclick="cancel2FA()">İptal</button>
+        </div>
+
+        <!-- OYUNCU PANELİ -->
+        <div id="player-panel" class="hidden">
+            <div class="bank-card">
+                <div class="card-chip"></div>
+                <div class="balance-title">Mevcut Bakiye</div>
+                <div class="balance-value" id="player-balance">0 ₺</div>
+                <div class="card-footer">
+                    <span id="player-username" style="font-weight: 600;">-</span>
+                    <span class="role-badge" id="player-role">Meslek</span>
+                </div>
+            </div>
+
+            <!-- İŞLEM BUTONLARI -->
+            <button class="btn btn-primary" onclick="openModal('transfer-modal')">💸 Para Gönder</button>
+            <button class="btn btn-success" onclick="openModal('qr-modal')">📱 QR Kod ile Ödeme Al</button>
+            <button class="btn btn-secondary" onclick="openHistoryModal()">📜 Hesap Hareketleri & Dekontlar</button>
+            <button id="police-btn" class="btn btn-warning hidden" onclick="openModal('police-modal')">🚨 Ceza Kes (Emniyet/Trafik)</button>
+            
+            <button class="btn btn-danger" onclick="logout()">Çıkış Yap</button>
+        </div>
+
+        <!-- YÖNETİCİ (BAŞBAKAN) PANELİ -->
+        <div id="admin-panel" class="hidden">
+            <div class="admin-header-card">
+                <h3 style="color: #fff; font-size: 18px; margin-bottom: 4px;">👑 Başbakanlık Kontrol Merkezi</h3>
+                <p style="color: #cbd5e1; font-size: 12px;">Şehir nüfusunu ve hazineyi yönetin</p>
+            </div>
+
+            <button class="btn btn-warning" style="margin-bottom: 15px;" onclick="openModal('logs-modal')">📋 Emniyet Ceza Kayıtlarını Gör</button>
+
+            <div style="font-size: 15px; font-weight: 700; color: var(--accent-blue); margin-bottom: 10px;">📋 Şehir Vatandaşları & Meslekler</div>
+            <div id="admin-user-list"></div>
+
+            <button class="btn btn-danger" onclick="hardReset()" style="margin-top: 20px; font-size: 13px; background: rgba(239, 68, 68, 0.1);">🗑️ Şehir Hafızasını Komple Sıfırla</button>
+            <button class="btn btn-danger" onclick="logout()">Çıkış Yap</button>
+        </div>
+    </div>
+
+    <!-- MODAL 1: PARA TRANSFERİ -->
+    <div id="transfer-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💸 Hızlı Para Transferi</h3>
+                <button class="close-btn" onclick="closeModal('transfer-modal')">✕</button>
+            </div>
+            <div class="form-group">
+                <select id="transfer-target"><option value="">Alıcı Seçin...</option></select>
+            </div>
+            <div class="form-group">
+                <input type="number" id="transfer-amount" placeholder="Miktar (₺)">
+            </div>
+            <button class="btn btn-primary" onclick="sendMoney()">Gönder</button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: QR KOD OLUŞTURMA -->
+    <div id="qr-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📱 QR Kod İle Ödeme Al</h3>
+                <button class="close-btn" onclick="closeModal('qr-modal')">✕</button>
+            </div>
+            <div class="form-group">
+                <input type="number" id="qr-amount" placeholder="Çekilecek Tutar (₺)">
+            </div>
+            <button class="btn btn-success" onclick="generateQR()">QR Kod Oluştur</button>
+            <div id="qr-container" class="hidden" style="text-align: center;">
+                <div id="qr-code-box"></div>
+                <p style="font-size: 12px; color: var(--text-muted);">Diğer oyuncu bu QR kodu okutunca ödeme tamamlanır.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: EMNİYET / TRAFİK / BAŞBAKAN CEZA KESME -->
+    <div id="police-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--accent-yellow);">🚨 Ceza Kesme Paneli</h3>
+                <button class="close-btn" onclick="closeModal('police-modal')">✕</button>
+            </div>
+            <div class="form-group">
+                <select id="fine-target"><option value="">Sürücü/Vatandaş Seçin...</option></select>
+            </div>
+            <div class="form-group">
+                <input type="text" id="fine-reason" placeholder="Ceza Sebebi (Örn: Hız İhlali)">
+            </div>
+            <div class="form-group">
+                <input type="number" id="fine-amount" placeholder="Ceza Miktarı (₺)">
+            </div>
+            <button class="btn btn-warning" onclick="issueFine()">Cezayı Kes ve Bildir</button>
+        </div>
+    </div>
+
+    <!-- MODAL 4: BAŞBAKANLIK CEZA RAPORLARI -->
+    <div id="logs-modal" class="modal hidden">
+        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>🚨 Emniyet Ceza Raporları</h3>
+                <button class="close-btn" onclick="closeModal('logs-modal')">✕</button>
+            </div>
+            <div id="admin-fine-logs"></div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: HESAP HAREKETLERİ / TRANSFER GEÇMİŞİ -->
+    <div id="history-modal" class="modal hidden">
+        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>📜 Hesap Hareketleri</h3>
+                <button class="close-btn" onclick="closeModal('history-modal')">✕</button>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Dekontunu görmek istediğiniz işleme tıklayın.</p>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: LOGOLU DİJİTAL DEKONT -->
+    <div id="receipt-modal" class="modal hidden">
+        <div class="modal-content" style="background: transparent; border: none; box-shadow: none;">
+            <div class="receipt-card">
+                <div class="receipt-header">
+                    <img src="logo.png" alt="DünyaBank" class="receipt-logo" onerror="this.style.display='none';">
+                    <p style="font-size: 11px; color: #64748b;">Şehir Dijital Ödeme Dekontu</p>
+                </div>
+                <div class="receipt-row"><span>Ref No:</span><strong id="rc-ref">-</strong></div>
+                <div class="receipt-row"><span>Tarih:</span><span id="rc-date">-</span></div>
+                <div class="receipt-row"><span>İşlem Tipi:</span><strong id="rc-type">-</strong></div>
+                <div class="receipt-row"><span>Gönderen:</span><span id="rc-sender">-</span></div>
+                <div class="receipt-row"><span>Alıcı:</span><span id="rc-receiver">-</span></div>
+                <div class="receipt-row" style="border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-top: 8px; font-size: 16px;">
+                    <span>Tutar:</span><strong id="rc-amount" style="color: #059669;">- ₺</strong>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 15px;" onclick="closeModal('receipt-modal')">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JSONbin.io Bilgileri (Ortak Veritabanı)
+        const BIN_ID = "6ad49e4cac6210605a3bd44d";
+        const API_KEY = "$2a$10$HGZMcLd1PrbiX0gdMqDSg.kJSbIdqcqsO3w3zB3e8VNC.1FsBA8zy";
+
+        let currentUser = null;
+        let pendingLoginUser = null;
+        let generated2FACode = "";
+
+        // Service Worker Kaydı (PWA Çalışması İçin)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(function(err) {});
+        }
+
+        const rolesList = [
+            "Emniyet Personeli", "Trafik Şube", "Doktor / Hemşire", 
+            "Bankacılık", "Hakim", "Avukat", "Dolmuş Şoförü", 
+            "Aşçı (Restorancı)", "Restoran Çalışanı", "Vali", "Başbakan / Yönetici"
+        ];
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrPayTo = urlParams.get('payTo');
+            const qrAmount = urlParams.get('amount');
+
+            if(qrPayTo && qrAmount) {
+                sessionStorage.setItem('pending_qr_pay', JSON.stringify({ to: qrPayTo, amount: parseInt(qrAmount) }));
+            }
+        };
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function showRegister() {
+            document.getElementById('login-box').classList.add('hidden');
+            document.getElementById('register-box').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('register-box').classList.add('hidden');
+            document.getElementById('login-box').classList.remove('hidden');
+        }
+
+        // --- CLOUD DB FONKSİYONLARI (JSONbin.io) ---
+        async function getCloudDB() {
+            try {
+                let response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                let data = await response.json();
+                return data.record || { users: {}, transactions: [], fine_logs: [] };
+            } catch (error) {
+                console.error("Veri çekme hatası:", error);
+                return { users: {}, transactions: [], fine_logs: [] };
+            }
+        }
+
+        async function saveCloudDB(dbData) {
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify(dbData)
+                });
+            } catch (error) {
+                console.error("Veri kaydetme hatası:", error);
+            }
+        }
+        // ------------------------------------------
+
+        async function addTransaction(sender, receiver, amount, type) {
+            let db = await getCloudDB();
+            let transactions = db.transactions || [];
+            let newTx = {
+                id: 'DB' + Math.floor(100000 + Math.random() * 900000),
+                sender: sender,
+                receiver: receiver,
+                amount: amount,
+                type: type,
+                date: new Date().toLocaleString('tr-TR')
+            };
+            transactions.unshift(newTx);
+            db.transactions = transactions;
+            await saveCloudDB(db);
+        }
+
+        async function register() {
+            let user = document.getElementById('reg-user').value.trim();
+            let pass = document.getElementById('reg-pass').value.trim();
+
+            if(!user || !pass) { alert("Lütfen tüm alanları doldurun!"); return; }
+
+            let db = await getCloudDB();
+            let users = db.users || {};
+
+            if(users[user]) { alert("Bu kullanıcı adı zaten kullanılıyor!"); return; }
+
+            let isAdminUser = (user.toLowerCase() === "huzeyfe");
+            let assignedRole = isAdminUser ? "Başbakan / Yönetici" : "Vatandaş";
+
+            users[user] = { password: pass, role: assignedRole, balance: 1000, isAdmin: isAdminUser };
+            db.users = users;
+            await saveCloudDB(db);
+
+            alert("Kayıt başarılı! Şimdi giriş yapabilirsin.");
+            showLogin();
+        }
+
+        // 2FA GİRİŞ KONTROLÜ
+        async function checkLoginCredentials() {
+            let user = document.getElementById('log-user').value.trim();
+            let pass = document.getElementById('log-pass').value.trim();
+            
+            let db = await getCloudDB();
+            let users = db.users || {};
+
+            if(!users[user] || users[user].password !== pass) {
+                alert("Hatalı kullanıcı adı veya şifre!");
+                return;
+            }
+
+            pendingLoginUser = user;
+            document.getElementById('login-box').classList.add('hidden');
+            
+            // 2FA Kodu Üret ve Gönder
+            send2FAEmail();
+            document.getElementById('2fa-box').classList.remove('hidden');
+        }
+
+        function send2FAEmail() {
+            generated2FACode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const templateParams = {
+                to_email: 'cinargulmez34@gmail.com',
+                code: generated2FACode,
+                user_name: pendingLoginUser
+            };
+
+            emailjs.send('default_service', 'template_f71lsbb', templateParams)
+                .then(function(response) {
+                    alert("Doğrulama kodu cinargulmez34@gmail.com adresine gönderildi.");
+                }, function(error) {
+                    console.log('E-posta gönderim hatası:', error);
+                    alert("E-posta gönderilirken bir hata oluştu.");
+                });
+        }
+
+        function resend2FACode() {
+            send2FAEmail();
+        }
+
+        async function verify2FACode() {
+            let enteredCode = document.getElementById('verification-code').value.trim();
+
+            if (enteredCode === generated2FACode) {
+                document.getElementById('2fa-box').classList.add('hidden');
+                document.getElementById('verification-code').value = '';
+                currentUser = pendingLoginUser;
+                pendingLoginUser = null;
+
+                let db = await getCloudDB();
+                let users = db.users || {};
+
+                let pendingQR = JSON.parse(sessionStorage.getItem('pending_qr_pay'));
+                if(pendingQR) {
+                    await processQRPayment(pendingQR);
+                    sessionStorage.removeItem('pending_qr_pay');
+                }
+
+                if(users[currentUser].isAdmin) { openAdminPanel(); } else { openPlayerPanel(); }
+            } else {
+                alert("Hatalı doğrulama kodu!");
+            }
+        }
+
+        function cancel2FA() {
+            pendingLoginUser = null;
+            document.getElementById('2fa-box').classList.add('hidden');
+            document.getElementById('login-box').classList.remove('hidden');
+        }
+
+        async function openPlayerPanel() {
+            let db = await getCloudDB();
+            let users = db.users || {};
+            let userData = users[currentUser];
+
+            document.getElementById('player-panel').classList.remove('hidden');
+            document.getElementById('player-username').innerText = currentUser;
+            document.getElementById('player-balance').innerText = userData.balance + " ₺";
+            document.getElementById('player-role').innerText = userData.role;
+
+            let userRole = userData.role ? userData.role.trim() : "";
+            if(userRole === "Emniyet Personeli" || userRole === "Trafik Şube" || userRole === "Başbakan / Yönetici" || userData.isAdmin) {
+                document.getElementById('police-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('police-btn').classList.add('hidden');
+            }
+
+            // Alıcı ve Ceza Kesilecek Kullanıcı Listelerini Doldur
+            let targetSelect = document.getElementById('transfer-target');
+            let fineSelect = document.getElementById('fine-target');
+            targetSelect.innerHTML = '<option value="">Alıcı Seçin...</option>';
+            fineSelect.innerHTML = '<option value="">Sürücü/Vatandaş Seçin...</option>';
+
+            for(let u in users) {
+                if(u !== currentUser) {
+                    targetSelect.innerHTML += `<option value="${u}">${u} (${users[u].role})</option>`;
+                    fineSelect.innerHTML += `<option value="${u}">${u} (${users[u].role})</option>`;
+                }
+            }
+        }
+
+        async function openHistoryModal() {
+            let db = await getCloudDB();
+            let transactions = db.transactions || [];
+            let listContainer = document.getElementById('history-list');
+            listContainer.innerHTML = '';
+
+            let userTxs = transactions.filter(t => t.sender === currentUser || t.receiver === currentUser);
+
+            if(userTxs.length === 0) {
+                listContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; font-size: 13px;">Henüz işlem geçmişiniz bulunmuyor.</div>';
+            } else {
+                userTxs.forEach(tx => {
+                    let isIncome = tx.receiver === currentUser;
+                    let amountColor = isIncome ? 'var(--accent-green)' : 'var(--accent-red)';
+                    let amountSign = isIncome ? '+' : '-';
+
+                    listContainer.innerHTML += `
+                        <div class="history-item" onclick="showReceipt('${tx.id}')">
+                            <div>
+                                <div style="font-weight: 700; font-size: 14px;">${tx.type}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">${tx.date}</div>
+                            </div>
+                            <div style="font-weight: 800; font-size: 15px; color: ${amountColor};">
+                                ${amountSign}${tx.amount} ₺
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            openModal('history-modal');
+        }
+
+        async function showReceipt(txId) {
+            let db = await getCloudDB();
+            let transactions = db.transactions || [];
+            let tx = transactions.find(t => t.id === txId);
+
+            if(tx) {
+                document.getElementById('rc-ref').innerText = tx.id;
+                document.getElementById('rc-date').innerText = tx.date;
+                document.getElementById('rc-type').innerText = tx.type;
+                document.getElementById('rc-sender').innerText = tx.sender;
+                document.getElementById('rc-receiver').innerText = tx.receiver;
+                document.getElementById('rc-amount').innerText = tx.amount + " ₺";
+
+                openModal('receipt-modal');
+            }
+        }
+
+        async function sendMoney() {
+            let target = document.getElementById('transfer-target').value;
+            let amount = parseInt(document.getElementById('transfer-amount').value);
+
+            if(!target || !amount || amount <= 0) { alert("Lütfen alıcı seçin ve geçerli bir miktar girin!"); return; }
+
+            let db = await getCloudDB();
+            let users = db.users || {};
+
+            if(!users[target]) { alert("Seçilen kullanıcı bulunamadı!"); return; }
+            if(users[currentUser].balance < amount) { alert("Yetersiz bakiye!"); return; }
+
+            users[currentUser].balance -= amount;
+            users[target].balance += amount;
+
+            db.users = users;
+            await saveCloudDB(db);
+
+            await addTransaction(currentUser, target, amount, "Para Transferi");
+
+            alert(`${target} kişisine ${amount} ₺ başarıyla gönderildi!`);
+            document.getElementById('transfer-target').value = '';
+            document.getElementById('transfer-amount').value = '';
+            closeModal('transfer-modal');
+            openPlayerPanel();
+        }
+
+        async function issueFine() {
+            let target = document.getElementById('fine-target').value;
+            let reason = document.getElementById('fine-reason').value.trim();
+            let amount = parseInt(document.getElementById('fine-amount').value);
+
+            if(!target || !reason || !amount || amount <= 0) { alert("Lütfen tüm alanları eksiksiz girin!"); return; }
+
+            let db = await getCloudDB();
+            let users = db.users || {};
+            let logs = db.fine_logs || [];
+
+            if(!users[target]) { alert("Ceza kesilecek kullanıcı bulunamadı!"); return; }
+
+            users[target].balance -= amount;
+
+            logs.unshift({ officer: currentUser, target: target, reason: reason, amount: amount, date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) });
+            
+            db.users = users;
+            db.fine_logs = logs;
+            await saveCloudDB(db);
+
+            await addTransaction(target, "Devlet Hazine (Ceza)", amount, "Ceza: " + reason);
+
+            alert(`${target} kişisine '${reason}' sebebiyle ${amount} ₺ ceza kesildi!`);
+            document.getElementById('fine-target').value = '';
+            document.getElementById('fine-reason').value = '';
+            document.getElementById('fine-amount').value = '';
+            closeModal('police-modal');
+            openPlayerPanel();
+        }
+
+        function generateQR() {
+            let amount = parseInt(document.getElementById('qr-amount').value);
+            if(!amount || amount <= 0) { alert("Lütfen geçerli bir tutar girin!"); return; }
+
+            let qrBox = document.getElementById('qr-code-box');
+            qrBox.innerHTML = '';
+
+            let currentURL = window.location.href.split('?')[0];
+            let payURL = `${currentURL}?payTo=${encodeURIComponent(currentUser)}&amount=${amount}`;
+
+            new QRCode(qrBox, { text: payURL, width: 160, height: 160 });
+            document.getElementById('qr-container').classList.remove('hidden');
+        }
+
+        async function processQRPayment(data) {
+            let db = await getCloudDB();
+            let users = db.users || {};
+
+            if(currentUser === data.to) { alert("Kendi oluşturduğunuz QR kodu ödeyemezsiniz!"); return; }
+            if(users[currentUser].balance < data.amount) { alert("QR Ödeme Başarısız: Yetersiz Bakiye!"); return; }
+
+            users[currentUser].balance -= data.amount;
+            users[data.to].balance += data.amount;
+
+            db.users = users;
+            await saveCloudDB(db);
+
+            await addTransaction(currentUser, data.to, data.amount, "QR Kod ile Ödeme");
+
+            alert(`🎉 QR ile Ödeme Başarılı!\nHesabınızdan ${data.amount} ₺ Çekildi.\nAlıcı: ${data.to}`);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        async function openAdminPanel() {
+            document.getElementById('admin-panel').classList.remove('hidden');
+            await renderAdminUserList();
+            await renderAdminFineLogs();
+        }
+
+        async function renderAdminUserList() {
+            let db = await getCloudDB();
+            let users = db.users || {};
+            let listContainer = document.getElementById('admin-user-list');
+            listContainer.innerHTML = '';
+
+            for(let u in users) {
+                let userData = users[u];
+                let roleOptions = rolesList.map(r => `<option value="${r}" ${userData.role === r ? 'selected' : ''}>${r}</option>`).join('');
+
+                listContainer.innerHTML += `
+                    <div class="admin-user-card">
+                        <div class="admin-user-info">
+                            <span style="font-weight: 700; font-size: 16px; color: #38bdf8;">👤 ${u}</span>
+                            <span style="color: var(--accent-green); font-weight: 700; font-size: 15px;">${userData.balance} ₺</span>
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Meslek Atama:</div>
+                        <select onchange="updateRole('${u}', this.value)" style="padding: 10px; font-size: 13px; margin-bottom: 8px;">${roleOptions}</select>
+                        <button class="btn btn-success" style="padding: 8px; font-size: 13px; margin-top: 4px;" onclick="addAdminBalance('${u}')">💰 Bakiye Ekle / Düzenle</button>
+                    </div>
+                `;
+            }
+        }
+
+        async function updateRole(username, newRole) {
+            let db = await getCloudDB();
+            db.users[username].role = newRole;
+            await saveCloudDB(db);
+            alert(`${username} kullanıcısının mesleği '${newRole}' olarak güncellendi.`);
+        }
+
+        async function addAdminBalance(username) {
+            let amountStr = prompt(`${username} için eklenecek miktarı girin (Çıkarmak için başına eksi - koyun):`);
+            if(!amountStr) return;
+            let amount = parseInt(amountStr);
+            if(isNaN(amount)) { alert("Geçersiz miktar!"); return; }
+
+            let db = await getCloudDB();
+            db.users[username].balance += amount;
+            await saveCloudDB(db);
+            await renderAdminUserList();
+            alert("Bakiye başarıyla güncellendi!");
+        }
+
+        async function renderAdminFineLogs() {
+            let db = await getCloudDB();
+            let logs = db.fine_logs || [];
+            let logContainer = document.getElementById('admin-fine-logs');
+            logContainer.innerHTML = '';
+
+            if(logs.length === 0) {
+                logContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; font-size: 13px; padding: 10px;">Henüz ceza kaydı yok.</div>';
+                return;
+            }
+
+            logs.forEach(log => {
+                logContainer.innerHTML += `
+                    <div class="log-card" style="border-left: 4px solid var(--accent-red);">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                            <span style="color: var(--accent-red); font-weight: 700;">🚨 Ceza Kesilen: ${log.target}</span>
+                            <span style="color: var(--text-muted); font-size: 11px;">${log.date}</span>
+                        </div>
+                        <div style="font-size: 14px; font-weight: 600; color: #fff;">Sebep: ${log.reason}</div>
+                        <div style="font-size: 13px; color: var(--accent-yellow); margin-top: 4px;">Ceza Tutar: ${log.amount} ₺ (Yazan Memur: ${log.officer})</div>
+                    </div>
+                `;
+            });
+        }
+
+        async function hardReset() {
+            if(confirm("DİKKAT: Şehirdeki tüm hesaplar, bakiye ve geçmiş silinecek. Emin misin?")) {
+                let emptyDB = { users: {}, transactions: [], fine_logs: [] };
+                await saveCloudDB(emptyDB);
+                alert("Şehir hafızası sıfırlandı.");
+                location.reload();
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('player-panel').classList.add('hidden');
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('login-box').classList.remove('hidden');
+            document.getElementById('log-user').value = '';
+            document.getElementById('log-pass').value = '';
+        }
+    </script>
+</body>
+</html>
